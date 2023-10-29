@@ -31,7 +31,7 @@ describe("GET /companies/:code", () => {
     test("Get a single company", async () => {
         const res = await request(app).get(`/companies/${testCompanies.code}`);
         expect(res.statusCode).toBe(200);
-        expect(res.body).toEqual({ company: testCompanies });
+        expect(res.body).toEqual({ company: { ...testCompanies, invoices: [] } });
     });
     test("Responds with 404 if can't find company", async () => {
         const res = await request(app).get(`/companies/0`);
@@ -39,20 +39,24 @@ describe("GET /companies/:code", () => {
     });
 });
 
+
 describe("POST /companies", () => {
     test("Creates a single company", async () => {
         const res = await request(app)
             .post('/companies')
-            .send({ code: 'howdy', name: 'partner', description: 'Maker of Cowboys.' });
+            .send({ name: 'HOWDY', description: 'BIG SKY!' });
 
         expect(res.statusCode).toBe(201);
+
         expect(res.body).toEqual({
             company: {
-                code: 'howdy', name: 'partner', description: 'Maker of Cowboys.'
+                code: 'howdy', name: 'HOWDY', description: 'BIG SKY!'
             }
         });
     });
 });
+
+
 
 describe("PUT /companies/:code", () => {
     test("Updates an existing company", async () => {

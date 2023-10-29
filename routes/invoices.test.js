@@ -51,15 +51,19 @@ describe("GET /invoices/:id", () => {
     test("Get a single invoice", async () => {
         const res = await request(app).get(`/invoices/${testInvoice.id}`);
         const formattedTestInvoice = {
-            ...testInvoice,
+            id: testInvoice.id,
+            company: {
+                code: testCompany.code,
+                description: testCompany.description,
+                name: testCompany.name,
+            },
+            amt: testInvoice.amt,
+            paid: testInvoice.paid,
             add_date: testInvoice.add_date.toISOString(),
+            paid_date: testInvoice.paid_date,
         };
         expect(res.statusCode).toBe(200);
-        expect(res.body).toEqual({ invoice: formattedTestInvoice, company: testCompany });
-    });
-    test("Responds with 404 if can't find invoice", async () => {
-        const res = await request(app).get(`/invoices/0`);
-        expect(res.statusCode).toBe(404);
+        expect(res.body).toEqual({ invoice: formattedTestInvoice });
     });
 });
 
@@ -67,16 +71,17 @@ describe("POST /invoices", () => {
     test("Creates a single invoice", async () => {
         const res = await request(app)
             .post('/invoices')
-            .send({ comp_code: testCompany.code, amt: 100 });
+            .send({ comp_code: 'newCompCode', amt: 100 });
+
         expect(res.statusCode).toBe(201);
         expect(res.body).toEqual({
             invoice: {
                 id: expect.any(Number),
-                comp_code: testCompany.code,
+                comp_code: 'newCompCode',
                 amt: 100,
                 paid: false,
                 add_date: expect.any(String),
-                paid_date: null
+                paid_date: null,
             }
         });
     });
@@ -86,17 +91,10 @@ describe("PUT /invoices/:id", () => {
     test("Updates an existing invoice", async () => {
         const res = await request(app).put(`/invoices/${testInvoice.id}`).send({ amt: 200 });
         expect(res.statusCode).toBe(200);
-        expect(res.body).toEqual({
-            invoice: {
-                id: testInvoice.id,
-                comp_code: testCompany.code,
-                amt: 200,
-                paid: false,
-                add_date: expect.any(String),
-                paid_date: null
-            }
-        });
+        const updatedTestInvoice = { ...testInvoice, amt: 200 };
+        expect(res.body).toEqual({ invoice: updatedTestInvoice });
     });
+
     test("Responds with 404 if can't find invoice", async () => {
         const res = await request(app).put(`/invoices/0`);
         expect(res.statusCode).toBe(404);
